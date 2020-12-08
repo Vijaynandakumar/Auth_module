@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sign_in_sign_up/helper/fireBaseAuthUtils.dart';
 import 'package:sign_in_sign_up/helper/styleWidgets.dart';
 import 'package:sign_in_sign_up/screens/signUp.dart';
 import 'package:sign_in_sign_up/helper/utilWidgets.dart';
 
 class SignIn extends StatefulWidget {
   static final id = "SignInScreen";
+
   @override
   _SignInState createState() => _SignInState();
 }
 
 class _SignInState extends State<SignIn> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController emailTextEditingController =
+      new TextEditingController();
+  final TextEditingController passwordTextEditingController =
+      new TextEditingController();
   bool _rememberMe = false;
 
   Widget _buildFP() {
@@ -86,8 +93,8 @@ class _SignInState extends State<SignIn> {
 
   Widget _buildSignUp() {
     return GestureDetector(
-      onTap: () => {print('Signup pressed'),
-      Navigator.pushNamed(context, SignUp.id)},
+      onTap: () =>
+          {print('Signup pressed'), Navigator.pushNamed(context, SignUp.id)},
       child: RichText(
         text: TextSpan(children: [
           TextSpan(
@@ -122,68 +129,96 @@ class _SignInState extends State<SignIn> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: SystemUiOverlayStyle.light,
-          child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Stack(
-              children: [
-                Container(
-                    height: double.infinity,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0xFF73AEF5),
-                            Color(0xFF61A4F1),
-                            Color(0xFF478DE0),
-                            Color(0xFF398AE5),
-                          ],
-                          stops: [
-                            0.1,
-                            0.4,
-                            0.7,
-                            0.9
-                          ]),
-                    )),
-                Container(
-                  child: SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 50),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Sign In',
-                          style: TextStyle(
-                              color: Colors.white,
-                               fontFamily: 'OpenSans',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 30.0),
-                        ),
-                        SizedBox(
-                          height: 40.0,
-                        ),
-                        // _buildEmailTF(),
-                        buildTF('Email', "Enter email address", Icons.email, false,
-                            TextInputType.emailAddress),
-                        SizedBox(height: 10.0),
-                        buildTF(
-                            'Password', "Enter password", Icons.lock, true, null),
-                        _buildFP(),
-                        _buildRM(),
-                        buildButton(() => {print('Login btn pressed')}, 'Sign In', 25.0),
-                        _buildSignInWithText(),
-                        _buildSocialBtnRow(),
-                        _buildSignUp(),
+      value: SystemUiOverlayStyle.light,
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
+          children: [
+            Container(
+                height: double.infinity,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF73AEF5),
+                        Color(0xFF61A4F1),
+                        Color(0xFF478DE0),
+                        Color(0xFF398AE5),
                       ],
-                    ),
+                      stops: [
+                        0.1,
+                        0.4,
+                        0.7,
+                        0.9
+                      ]),
+                )),
+            Container(
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 50),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Sign In',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'OpenSans',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30.0),
+                      ),
+                      SizedBox(
+                        height: 40.0,
+                      ),
+                      // _buildEmailTF(),
+                      buildTextFormField(
+                          'Email',
+                          "Enter email address",
+                          Icons.email,
+                          false,
+                          TextInputType.emailAddress, (value) {
+                        if (value.isEmpty) {
+                          return "Please enter some text";
+                        }
+                      }, emailTextEditingController),
+                      SizedBox(height: 10.0),
+                      buildTextFormField(
+                          'Password', "Enter password", Icons.lock, true, null,
+                          (value) {
+                        if (value.isEmpty) {
+                          return "Please enter some text";
+                        }
+                      }, passwordTextEditingController),
+                      _buildFP(),
+                      _buildRM(),
+                      buildButton(
+                          () => {
+                                print('Login btn pressed'),
+                                if (_formKey.currentState.validate())
+                                  {
+                                    signUserWithEmailPassword(
+                                        emailTextEditingController.text,
+                                        passwordTextEditingController.text,
+                                        context)
+                                  }
+                              },
+                          'Sign In',
+                          25.0),
+                      _buildSignInWithText(),
+                      _buildSocialBtnRow(),
+                      _buildSignUp(),
+                    ],
                   ),
-                )
-              ],
-            ),
-          ),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
     ));
   }
 }

@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sign_in_sign_up/helper/fireBaseAuthUtils.dart';
 import 'package:sign_in_sign_up/helper/utilWidgets.dart';
+import 'package:sign_in_sign_up/screens/signIn.dart';
 
 class SignUp extends StatefulWidget {
-  static final id = "SignInScreen";
+  static final id = "SignUpScreen";
 
   @override
   _SignUpState createState() => _SignUpState();
 }
 
 class _SignUpState extends State<SignUp> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController userNameTextEditingController =
+      new TextEditingController();
+  final TextEditingController emailTextEditingController =
+      new TextEditingController();
+  final TextEditingController passwordTextEditingController =
+      new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,36 +52,75 @@ class _SignUpState extends State<SignUp> {
             child: SingleChildScrollView(
               physics: AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 80),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Sign Up',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'OpenSans',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30.0),
-                  ),
-                  SizedBox(
-                    height: 40.0,
-                  ),
-                  // _buildEmailTF(),
-                  buildTF(
-                      'User name',
-                      "Enter user name",
-                      Icons.account_circle_sharp,
-                      false,
-                      TextInputType.emailAddress),
-                  SizedBox(height: 10.0),
-                  buildTF('Email', "Enter email address", Icons.email, false,
-                      TextInputType.emailAddress),
-                  SizedBox(height: 10.0),
-                  buildTF('Password', "Enter password", Icons.lock, true, null),
-                  buildButton(() => {print('Login btn pressed')}, 'Sign Up', 25.0),
-                  buildButton(() => {print('Login btn pressed'),
-                  Navigator.pop(context)}, 'Back to Sign In', 0.0),
-                ],
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Sign Up',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'OpenSans',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30.0),
+                    ),
+                    SizedBox(
+                      height: 40.0,
+                    ),
+                    // _buildEmailTF(),
+                    buildTextFormField(
+                        'User name',
+                        "Enter user name",
+                        Icons.account_circle_sharp,
+                        false,
+                        TextInputType.emailAddress, (value) {
+                      if (value.isEmpty) {
+                        return "Please enter some text";
+                      }
+                    }, userNameTextEditingController),
+                    SizedBox(height: 10.0),
+                    buildTextFormField(
+                        'Email',
+                        "Enter email address",
+                        Icons.email,
+                        false,
+                        TextInputType.emailAddress, (value) {
+                      if (value.isEmpty) {
+                        return "Please enter some text";
+                      }
+                    }, emailTextEditingController),
+                    SizedBox(height: 10.0),
+                    buildTextFormField(
+                        'Password', "Enter password", Icons.lock, true, null,
+                        (value) {
+                      if (value.isEmpty) {
+                        return "Please enter some text";
+                      }
+                    }, passwordTextEditingController),
+                    buildButton(
+                        () => {
+                              print('Sign Up btn pressed'),
+                              if (_formKey.currentState.validate())
+                                {
+                                  regiterUser(
+                                      userNameTextEditingController.text,
+                                      emailTextEditingController.text,
+                                      passwordTextEditingController.text,
+                                      context)
+                                }
+                            },
+                        'Sign Up',
+                        25.0),
+                    buildButton(
+                        () => {
+                              print('Login btn pressed'),
+                              Navigator.pop(context)
+                            },
+                        'Back to Sign In',
+                        0.0),
+                  ],
+                ),
               ),
             ),
           )
